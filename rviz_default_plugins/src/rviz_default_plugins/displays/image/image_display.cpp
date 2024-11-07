@@ -88,8 +88,9 @@ ImageDisplay::ImageDisplay(std::unique_ptr<ROSImageTextureIface> texture)
     new rviz_common::properties::QosProfileProperty(this->topic_property_, rclcpp::QoS(5));
 
   transport_override_property_ = new rviz_common::properties::EnumProperty(
-    "Transport Override", "", "By default this display uses the topic name to determine the" +
-    " image_transport type. If this is not possible, use this field to manually set the transport.",
+    "Transport Override", "", QString("By default this display uses the topic name to ") +
+    QString("determine the image_transport type. If this is not possible, use this ") +
+    QString("field to manually set the transport."),
     this->topic_property_, SLOT(subscribe()), this
   );
 
