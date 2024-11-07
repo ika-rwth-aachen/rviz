@@ -87,10 +87,13 @@ public:
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
 
+protected Q_SLOTS:
+  void updateTopic() override;
+  void subscribe() override;
+
 protected:
   void onEnable() override;
   void onDisable() override;
-  void subscribe() override;
   void unsubscribe() override;
 
   void incomingMessage(const sensor_msgs::msg::Image::ConstSharedPtr & img_msg);
@@ -113,6 +116,7 @@ private:
 
   std::unique_ptr<rviz_common::RenderPanel> render_panel_;
 
+  rviz_common::properties::EnumProperty * transport_override_property_;
   rviz_common::properties::BoolProperty * normalize_property_;
   rviz_common::properties::FloatProperty * min_property_;
   rviz_common::properties::FloatProperty * max_property_;

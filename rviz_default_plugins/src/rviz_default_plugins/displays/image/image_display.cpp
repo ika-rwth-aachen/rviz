@@ -87,6 +87,12 @@ ImageDisplay::ImageDisplay(std::unique_ptr<ROSImageTextureIface> texture)
   this->qos_profile_property_ =
     new rviz_common::properties::QosProfileProperty(this->topic_property_, rclcpp::QoS(5));
 
+  transport_override_property_ = new rviz_common::properties::EnumProperty(
+    "Transport Override", "", "By default this display uses the topic name to determine the" +
+    " image_transport type. If this is not possible, use this field to manually set the transport.",
+    this->topic_property_, SLOT(subscribe()), this
+  );
+
   normalize_property_ = new rviz_common::properties::BoolProperty(
     "Normalize Range", true,
     "If set to true, will try to estimate the range of possible values from the received images.",
@@ -136,16 +142,16 @@ void ImageDisplay::incomingMessage(const sensor_msgs::msg::Image::ConstSharedPtr
   ImageTransportDisplay<sensor_msgs::msg::Image>::incomingMessage(img_msg);
 }
 
-void ImageDisplay::subscribe()
+void ImageDisplay::updateTopic()
 {
   if (!isEnabled()) {
     return;
   }
+  transport_override_property_->setStdString("");
 
-  // TODO(mjforan) this should really be in onInitialize but setStatus does not work there
   // Populate topic message types based on installed image_transport plugins
   image_transport::ImageTransport image_transport_(rviz_ros_node_.lock()->get_raw_node());
-  std::vector<std::string> transports = image_transport_.getLoadableTransports();
+  std::vector<std::string> loadable_transports = image_transport_.getLoadableTransports();
   std::vector<QString> message_types;
   // Map to message types
   const std::unordered_map<std::string, std::string> transport_message_types_ = {
@@ -158,10 +164,13 @@ void ImageDisplay::subscribe()
   std::string transports_str = "";
   rviz_common::properties::StatusProperty::Level transports_status_level =
     rviz_common::properties::StatusProperty::Ok;
-  for (std::string & transport : transports) {
+  // Populate topic message types and transport override options
+  transport_override_property_->addOptionStd("");
+  for (std::string & transport : loadable_transports) {
     transport = transport.substr(transport.find_last_of('/') + 1);
     try {
       message_types.push_back(QString::fromStdString(transport_message_types_.at(transport)));
+      transport_override_property_->addOptionStd(transport);
       transports_str += transport + ", ";
     } catch (const std::out_of_range & e) {
       transports_status_level = rviz_common::properties::StatusProperty::Warn;
@@ -175,13 +184,21 @@ void ImageDisplay::subscribe()
   ((rviz_common::properties::RosTopicMultiProperty *)topic_property_)
   ->setMessageTypes(message_types);
 
+  rviz_default_plugins::displays::ImageTransportDisplay<sensor_msgs::msg::Image>::updateTopic();
+}
+
+void ImageDisplay::subscribe()
+{
+  if (!isEnabled()) {
+    return;
+  }
+
   if (topic_property_->isEmpty()) {
     setStatus(
       rviz_common::properties::StatusProperty::Error, "Topic",
       QString("Error subscribing: Empty topic name"));
     return;
   }
-
   try {
     rclcpp::Node::SharedPtr node = rviz_ros_node_.lock()->get_raw_node();
     image_transport::ImageTransport image_transport_(node);
@@ -189,12 +206,29 @@ void ImageDisplay::subscribe()
     // image_transport::SubscriberFilter, which requires a different callback for each transport
     // type. image_transport::Subscriber only requires one callback for "raw" and the other types
     // are automatically converted.
+    std::vector<std::string> transports = image_transport_.getLoadableTransports();
+    // Strip down to basic transport names
+    for (std::string & transport : transports) {
+      transport = transport.substr(transport.find_last_of('/') + 1);
+    }
+    // Use override property for transport hint if set, otherwise deduce from topic name
+    std::string transport_hint = transport_override_property_->getStdString();
+    if (transport_hint.empty()) {
+      transport_hint = getTransportFromTopic(topic_property_->getStdString());
+    }
+    // Check if the specified transport is in the list of loadable transports
+    if (std::find(transports.begin(), transports.end(), transport_hint) == transports.end()) {
+      setStatus(
+      rviz_common::properties::StatusProperty::Error, "Topic",
+      QString("Error subscribing: Specified image transport is not installed"));
+      return;
+    }
     subscription_ = image_transport_.subscribe(
       rviz_default_plugins::displays::getBaseTopicFromTopic(topic_property_->getTopicStd()),
       qos_profile.get_rmw_qos_profile().depth,
       &ImageDisplay::incomingMessage, this,
       new image_transport::TransportHints(
-        node.get(), getTransportFromTopic(topic_property_->getStdString()), "image_transport"));
+        node.get(), transport_hint, "image_transport"));
 
     setStatus(rviz_common::properties::StatusProperty::Ok, "Topic", "OK");
   } catch (rclcpp::exceptions::InvalidTopicNameError & e) {
