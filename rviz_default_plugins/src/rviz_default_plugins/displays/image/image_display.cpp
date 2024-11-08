@@ -41,6 +41,7 @@
 #include <OgreTechnique.h>
 #include <OgreTextureManager.h>
 #include <OgreViewport.h>
+#include <QString>
 
 #include <QString>  // NOLINT: cpplint is unable to handle the include order here
 
@@ -117,14 +118,48 @@ ImageDisplay::ImageDisplay(std::unique_ptr<ROSImageTextureIface> texture)
 void ImageDisplay::onInitialize()
 {
   ITDClass::onInitialize();
-
   updateNormalizeOptions();
   setupScreenRectangle();
-
   setupRenderPanel();
 
   render_panel_->getRenderWindow()->setupSceneAfterInit(
     [this](Ogre::SceneNode * scene_node) {scene_node->attachObject(screen_rect_.get());});
+
+  // Populate message types and transport overrides based on installed image_transport plugins
+  image_transport::ImageTransport image_transport_(rviz_ros_node_.lock()->get_raw_node());
+  std::vector<std::string> loadable_transports = image_transport_.getLoadableTransports();
+  std::vector<QString> message_types;
+  // Map to message types
+  const std::unordered_map<std::string, std::string> transport_message_types_ = {
+    {"raw", "sensor_msgs/msg/Image"},
+    {"compressed", "sensor_msgs/msg/CompressedImage"},
+    {"compressedDepth", "sensor_msgs/msg/CompressedImage"},
+    {"theora", "theora_image_transport/msg/Packet"},
+    {"zstd", "sensor_msgs/msg/CompressedImage"},
+  };
+  std::string transports_str = "";
+  rviz_common::properties::StatusProperty::Level transports_status_level =
+    rviz_common::properties::StatusProperty::Ok;
+  transport_override_property_->clearOptions();
+  transport_override_property_->addOptionStd("");
+  for (std::string & transport : loadable_transports) {
+    transport = transport.substr(transport.find_last_of('/') + 1);
+    try {
+      message_types.push_back(QString::fromStdString(transport_message_types_.at(transport)));
+      transport_override_property_->addOptionStd(transport);
+      transports_str += transport + ", ";
+    } catch (const std::out_of_range & e) {
+      transports_status_level = rviz_common::properties::StatusProperty::Warn;
+      transports_str += "(unknown: " + transport + "), ";
+    }
+  }
+  // TODO(mjforan) setStatus doesn't work in onInitialize or updateTopic
+  setStatusStd(transports_status_level, "Image Transports", transports_str);
+  // Remove duplicates
+  message_types.erase(std::unique(message_types.begin(), message_types.end()), message_types.end());
+  // Update the message types to allow in the topic_property_
+  ((rviz_common::properties::RosTopicMultiProperty *)topic_property_)
+  ->setMessageTypes(message_types);
 }
 
 ImageDisplay::~ImageDisplay() = default;
@@ -141,51 +176,6 @@ void ImageDisplay::onDisable()
 void ImageDisplay::incomingMessage(const sensor_msgs::msg::Image::ConstSharedPtr & img_msg)
 {
   ImageTransportDisplay<sensor_msgs::msg::Image>::incomingMessage(img_msg);
-}
-
-void ImageDisplay::updateTopic()
-{
-  if (!isEnabled()) {
-    return;
-  }
-  transport_override_property_->setStdString("");
-
-  // Populate topic message types based on installed image_transport plugins
-  image_transport::ImageTransport image_transport_(rviz_ros_node_.lock()->get_raw_node());
-  std::vector<std::string> loadable_transports = image_transport_.getLoadableTransports();
-  std::vector<QString> message_types;
-  // Map to message types
-  const std::unordered_map<std::string, std::string> transport_message_types_ = {
-    {"raw", "sensor_msgs/msg/Image"},
-    {"compressed", "sensor_msgs/msg/CompressedImage"},
-    {"compressedDepth", "sensor_msgs/msg/CompressedImage"},
-    {"theora", "theora_image_transport/msg/Packet"},
-    {"zstd", "sensor_msgs/msg/CompressedImage"},
-  };
-  std::string transports_str = "";
-  rviz_common::properties::StatusProperty::Level transports_status_level =
-    rviz_common::properties::StatusProperty::Ok;
-  // Populate topic message types and transport override options
-  transport_override_property_->addOptionStd("");
-  for (std::string & transport : loadable_transports) {
-    transport = transport.substr(transport.find_last_of('/') + 1);
-    try {
-      message_types.push_back(QString::fromStdString(transport_message_types_.at(transport)));
-      transport_override_property_->addOptionStd(transport);
-      transports_str += transport + ", ";
-    } catch (const std::out_of_range & e) {
-      transports_status_level = rviz_common::properties::StatusProperty::Warn;
-      transports_str += "(unknown: " + transport + "), ";
-    }
-  }
-  setStatusStd(transports_status_level, "Image Transports", transports_str);
-  // Remove duplicates
-  message_types.erase(std::unique(message_types.begin(), message_types.end()), message_types.end());
-  // Update the message types to allow in the topic_property_
-  ((rviz_common::properties::RosTopicMultiProperty *)topic_property_)
-  ->setMessageTypes(message_types);
-
-  rviz_default_plugins::displays::ImageTransportDisplay<sensor_msgs::msg::Image>::updateTopic();
 }
 
 void ImageDisplay::subscribe()

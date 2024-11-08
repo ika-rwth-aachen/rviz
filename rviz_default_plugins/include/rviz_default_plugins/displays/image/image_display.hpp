@@ -88,7 +88,6 @@ public Q_SLOTS:
   virtual void updateNormalizeOptions();
 
 protected Q_SLOTS:
-  void updateTopic() override;
   void subscribe() override;
 
 protected:

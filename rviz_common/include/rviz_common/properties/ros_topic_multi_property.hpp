@@ -30,6 +30,8 @@
 #ifndef RVIZ_COMMON__PROPERTIES__ROS_TOPIC_MULTI_PROPERTY_HPP_
 #define RVIZ_COMMON__PROPERTIES__ROS_TOPIC_MULTI_PROPERTY_HPP_
 
+#include <QString>
+
 #include <string>
 #include <vector>
 
