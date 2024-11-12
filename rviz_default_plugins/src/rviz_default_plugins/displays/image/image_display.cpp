@@ -216,7 +216,7 @@ void ImageDisplay::subscribe()
     }
     subscription_ = image_transport_.subscribe(
       rviz_default_plugins::displays::getBaseTopicFromTopic(topic_property_->getTopicStd()),
-      qos_profile.get_rmw_qos_profile().depth,
+      qos_profile.get_rmw_qos_profile(),
       &ImageDisplay::incomingMessage, this,
       new image_transport::TransportHints(
         node.get(), transport_hint, "image_transport"));
