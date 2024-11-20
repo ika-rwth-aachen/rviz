@@ -48,6 +48,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -66,6 +67,7 @@
 #include "rviz_rendering/render_window.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 
+
 namespace rviz_default_plugins
 {
 namespace displays
@@ -75,7 +77,8 @@ ImageDisplay::ImageDisplay()
 : ImageDisplay(std::make_unique<ROSImageTexture>()) {}
 
 ImageDisplay::ImageDisplay(std::unique_ptr<ROSImageTextureIface> texture)
-: texture_(std::move(texture))
+: messages_received_(0),
+  texture_(std::move(texture))
 {
   // Remove the default single-type topic and replace with a multi-type topic property
   // This allows us to display image and compressed image topics in the topic list
@@ -115,9 +118,17 @@ ImageDisplay::ImageDisplay(std::unique_ptr<ROSImageTextureIface> texture)
   got_float_image_ = false;
 }
 
+// Need to override this method because of the new type RosTopicMultiProperty
+void ImageDisplay::setTopic(const QString & topic, const QString & datatype)
+{
+  (void) datatype;
+  ((rviz_common::properties::RosTopicMultiProperty *)topic_property_)
+  ->setString(topic);
+}
+
 void ImageDisplay::onInitialize()
 {
-  ITDClass::onInitialize();
+  _RosTopicDisplay::onInitialize();
   updateNormalizeOptions();
   setupScreenRectangle();
   setupRenderPanel();
@@ -130,16 +141,6 @@ void ImageDisplay::onInitialize()
   std::vector<std::string> loadable_transports = image_transport_.getLoadableTransports();
   std::vector<QString> message_types;
   // Map to message types
-  const std::unordered_map<std::string, std::string> transport_message_types_ = {
-    {"raw", "sensor_msgs/msg/Image"},
-    {"compressed", "sensor_msgs/msg/CompressedImage"},
-    {"compressedDepth", "sensor_msgs/msg/CompressedImage"},
-    {"theora", "theora_image_transport/msg/Packet"},
-    {"zstd", "sensor_msgs/msg/CompressedImage"},
-  };
-  std::string transports_str = "";
-  rviz_common::properties::StatusProperty::Level transports_status_level =
-    rviz_common::properties::StatusProperty::Ok;
   transport_override_property_->clearOptions();
   transport_override_property_->addOptionStd("");
   for (std::string & transport : loadable_transports) {
@@ -147,36 +148,77 @@ void ImageDisplay::onInitialize()
     try {
       message_types.push_back(QString::fromStdString(transport_message_types_.at(transport)));
       transport_override_property_->addOptionStd(transport);
-      transports_str += transport + ", ";
     } catch (const std::out_of_range & e) {
-      transports_status_level = rviz_common::properties::StatusProperty::Warn;
-      transports_str += "(unknown: " + transport + "), ";
+      // This case will be handled in subscribe
     }
   }
-  // TODO(mjforan) setStatus doesn't work in onInitialize or updateTopic
-  setStatusStd(transports_status_level, "Image Transports", transports_str);
   // Remove duplicates
-  message_types.erase(std::unique(message_types.begin(), message_types.end()), message_types.end());
+  message_types.erase(
+    std::unique(message_types.begin(), message_types.end()), message_types.end());
   // Update the message types to allow in the topic_property_
   ((rviz_common::properties::RosTopicMultiProperty *)topic_property_)
   ->setMessageTypes(message_types);
 }
 
-ImageDisplay::~ImageDisplay() = default;
+ImageDisplay::~ImageDisplay()
+{
+  unsubscribe();
+}
 
 void ImageDisplay::onEnable() {subscribe();}
 
 void ImageDisplay::onDisable()
 {
   unsubscribe();
-  clear();
+  reset();
 }
 
-// Need a signature with pass by reference for image_transport_.subscribe
+/// Incoming message callback.
+/**
+* Checks if the message pointer
+* is valid, increments messages_received_, then calls
+* processMessage().
+*/
 void ImageDisplay::incomingMessage(const sensor_msgs::msg::Image::ConstSharedPtr & img_msg)
 {
-  ImageTransportDisplay<sensor_msgs::msg::Image>::incomingMessage(img_msg);
+  if (!img_msg) {
+    return;
+  }
+
+  ++messages_received_;
+  QString topic_str = QString::number(messages_received_) + " messages received";
+  rviz_common::properties::StatusProperty::Level topic_status_level =
+    rviz_common::properties::StatusProperty::Ok;
+  // Append topic subscription frequency if we can lock rviz_ros_node_.
+  std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_interface =
+    rviz_ros_node_.lock();
+  if (node_interface != nullptr) {
+    try {
+      const double duration =
+        (node_interface->get_raw_node()->now() - subscription_start_time_).seconds();
+      const double subscription_frequency =
+        static_cast<double>(messages_received_) / duration;
+      topic_str += " at " + QString::number(subscription_frequency, 'f', 1) + " hz.";
+    } catch (const std::runtime_error & e) {
+      if (std::string(e.what()).find("can't subtract times with different time sources") !=
+        std::string::npos)
+      {
+        topic_status_level = rviz_common::properties::StatusProperty::Warn;
+        topic_str += ". ";
+        topic_str += e.what();
+      } else {
+        throw;
+      }
+    }
+  }
+  setStatus(
+    topic_status_level,
+    "Topic",
+    topic_str);
+
+  processMessage(img_msg);
 }
+
 
 void ImageDisplay::subscribe()
 {
@@ -193,15 +235,22 @@ void ImageDisplay::subscribe()
   try {
     rclcpp::Node::SharedPtr node = rviz_ros_node_.lock()->get_raw_node();
     image_transport::ImageTransport image_transport_(node);
-    // This part differs from the parent class. ImageTransportDisplay uses an
-    // image_transport::SubscriberFilter, which requires a different callback for each transport
-    // type. image_transport::Subscriber only requires one callback for "raw" and the other types
-    // are automatically converted.
+    // Check which image_transport plugins are installed
     std::vector<std::string> transports = image_transport_.getLoadableTransports();
-    // Strip down to basic transport names
+    std::string transports_str = "";
+    rviz_common::properties::StatusProperty::Level transports_status_level =
+      rviz_common::properties::StatusProperty::Ok;
+    // Strip down to basic transport names, construct string for status display
     for (std::string & transport : transports) {
       transport = transport.substr(transport.find_last_of('/') + 1);
+      if (transport_message_types_.find(transport) == transport_message_types_.end()) {
+        transports_status_level = rviz_common::properties::StatusProperty::Warn;
+        transports_str += "(unknown: " + transport + "), ";
+      } else {
+        transports_str += transport + ", ";
+      }
     }
+    setStatusStd(transports_status_level, "Image Transports Installed", transports_str);
     // Use override property for transport hint if set, otherwise deduce from topic name
     std::string transport_hint = transport_override_property_->getStdString();
     if (transport_hint.empty()) {
@@ -214,13 +263,19 @@ void ImageDisplay::subscribe()
       QString("Error subscribing: Specified image transport is not installed"));
       return;
     }
-    subscription_ = image_transport_.subscribe(
-      rviz_default_plugins::displays::getBaseTopicFromTopic(topic_property_->getTopicStd()),
-      qos_profile.get_rmw_qos_profile(),
-      &ImageDisplay::incomingMessage, this,
-      new image_transport::TransportHints(
-        node.get(), transport_hint, "image_transport"));
-
+    // image_transport::Subscriber only requires one callback for "raw" and the other types are
+    // automatically converted.
+    subscription_ = std::make_shared<image_transport::SubscriberFilter>();
+    subscription_->subscribe(
+      node.get(),
+      getBaseTopicFromTopic(topic_property_->getTopicStd()),
+      transport_hint,
+      qos_profile.get_rmw_qos_profile());
+    subscription_start_time_ = node->now();
+    subscription_callback_ = subscription_->registerCallback(
+      std::bind(
+        &rviz_default_plugins::displays::ImageDisplay::incomingMessage,
+        this, std::placeholders::_1));
     setStatus(rviz_common::properties::StatusProperty::Ok, "Topic", "OK");
   } catch (rclcpp::exceptions::InvalidTopicNameError & e) {
     setStatus(
@@ -229,7 +284,19 @@ void ImageDisplay::subscribe()
   }
 }
 
-void ImageDisplay::unsubscribe() {subscription_.shutdown();}
+void ImageDisplay::updateTopic() {resetSubscription();}
+
+void ImageDisplay::transformerChangedCallback() {resetSubscription();}
+
+void ImageDisplay::resetSubscription()
+{
+  unsubscribe();
+  reset();
+  subscribe();
+  context_->queueRender();
+}
+
+void ImageDisplay::unsubscribe() {subscription_.reset();}
 
 void ImageDisplay::updateNormalizeOptions()
 {
@@ -287,7 +354,8 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
 
 void ImageDisplay::reset()
 {
-  ITDClass::reset();
+  Display::reset();
+  messages_received_ = 0;
   clear();
 }
 

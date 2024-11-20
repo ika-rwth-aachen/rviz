@@ -167,7 +167,7 @@ CameraDisplay::~CameraDisplay()
 
 void CameraDisplay::onInitialize()
 {
-  ITDClass::onInitialize();
+  ImageDisplay::onInitialize();
 
   setupSceneNodes();
   setupRenderPanel();
@@ -311,7 +311,7 @@ void CameraDisplay::fixedFrameChanged()
 
 void CameraDisplay::subscribe()
 {
-  ITDClass::subscribe();
+  ImageDisplay::subscribe();
 
   if (!subscription_) {
     return;
@@ -380,7 +380,7 @@ void CameraDisplay::createCameraInfoSubscription()
 
 void CameraDisplay::unsubscribe()
 {
-  ITDClass::unsubscribe();
+  ImageDisplay::unsubscribe();
   caminfo_sub_.reset();
   tf_filter_.reset();
 }
@@ -671,7 +671,7 @@ void CameraDisplay::processMessage(sensor_msgs::msg::Image::ConstSharedPtr msg)
 
 void CameraDisplay::reset()
 {
-  ITDClass::reset();
+  ImageDisplay::reset();
   clear();
 }
 

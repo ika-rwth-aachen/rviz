@@ -38,9 +38,11 @@
 #include <OgreSharedPtr.h>
 
 #include <QObject>  // NOLINT cpplint cannot handle include order here
+#include <QString>  // NOLINT cpplint cannot handle include order here
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include <sensor_msgs/msg/image.hpp>
 
@@ -50,9 +52,12 @@
 #include "rviz_common/properties/float_property.hpp"
 #include "rviz_common/properties/int_property.hpp"
 #include "rviz_common/render_panel.hpp"
-#include "rviz_default_plugins/displays/image/image_transport_display.hpp"
 #include "rviz_default_plugins/displays/image/ros_image_texture_iface.hpp"
 #include "rviz_default_plugins/visibility_control.hpp"
+#include "get_transport_from_topic.hpp"
+#include "image_transport/image_transport.hpp"
+#include "image_transport/subscriber_filter.hpp"
+#include "rviz_common/ros_topic_display.hpp"
 #endif
 
 namespace Ogre
@@ -70,8 +75,7 @@ namespace displays
  * \class ImageDisplay
  *
  */
-class RVIZ_DEFAULT_PLUGINS_PUBLIC ImageDisplay
-  : public rviz_default_plugins::displays::ImageTransportDisplay<sensor_msgs::msg::Image>
+class RVIZ_DEFAULT_PLUGINS_PUBLIC ImageDisplay : public rviz_common::_RosTopicDisplay
 {
   Q_OBJECT
 
@@ -81,26 +85,41 @@ public:
   ~ImageDisplay() override;
 
   void onInitialize() override;
-  void update(float wall_dt, float ros_dt) override;
+  void update(float wall_dt, float ros_dt);
   void reset() override;
 
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
 
 protected Q_SLOTS:
-  void subscribe() override;
+  virtual void subscribe();
 
 protected:
   void onEnable() override;
   void onDisable() override;
-  void unsubscribe() override;
-
+  virtual void unsubscribe();
+  void updateTopic() override;
+  void transformerChangedCallback() override;
+  void resetSubscription();
   void incomingMessage(const sensor_msgs::msg::Image::ConstSharedPtr & img_msg);
+  void setTopic(const QString & topic, const QString & datatype) override;
 
   /* This is called by incomingMessage(). */
-  void processMessage(sensor_msgs::msg::Image::ConstSharedPtr msg) override;
+  virtual void processMessage(sensor_msgs::msg::Image::ConstSharedPtr msg);
 
-  image_transport::Subscriber subscription_;
+  std::shared_ptr<image_transport::SubscriberFilter> subscription_;
+  uint32_t messages_received_;
+  rclcpp::Time subscription_start_time_;
+  message_filters::Connection subscription_callback_;
+  const std::unordered_map<std::string, std::string> transport_message_types_ = {
+    /* *INDENT-OFF* */
+    {"raw",             "sensor_msgs/msg/Image"},
+    {"compressed",      "sensor_msgs/msg/CompressedImage"},
+    {"compressedDepth", "sensor_msgs/msg/CompressedImage"},
+    {"theora",          "theora_image_transport/msg/Packet"},
+    {"zstd",            "sensor_msgs/msg/CompressedImage"},
+    /* *INDENT-ON* */
+  };
 
 private:
   void setupScreenRectangle();

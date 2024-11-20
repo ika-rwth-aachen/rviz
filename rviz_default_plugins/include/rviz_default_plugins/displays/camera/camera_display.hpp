@@ -53,7 +53,7 @@
 # include "sensor_msgs/msg/camera_info.hpp"
 # include "tf2_ros/message_filter.h"
 
-# include "rviz_default_plugins/displays/image/image_transport_display.hpp"
+# include "rviz_default_plugins/displays/image/image_display.hpp"
 # include "rviz_default_plugins/displays/image/ros_image_texture_iface.hpp"
 # include "rviz_default_plugins/visibility_control.hpp"
 # include "rviz_rendering/render_window.hpp"
@@ -102,7 +102,7 @@ struct ImageDimensions
  *
  */
 class RVIZ_DEFAULT_PLUGINS_PUBLIC CameraDisplay
-  : public rviz_default_plugins::displays::ImageTransportDisplay<sensor_msgs::msg::Image>,
+  : public ImageDisplay,
   public Ogre::RenderTargetListener
 {
   Q_OBJECT
