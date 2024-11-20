@@ -28,43 +28,57 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#include <memory>
+#ifndef RVIZ_DEFAULT_PLUGINS__PUBLISHERS__COMPRESSED_IMAGE_PUBLISHER_HPP_
+#define RVIZ_DEFAULT_PLUGINS__PUBLISHERS__COMPRESSED_IMAGE_PUBLISHER_HPP_
+
+#include <cmath>
+#include <iostream>
 #include <string>
+#include <vector>
 
-#include "rviz_visual_testing_framework/visual_test_fixture.hpp"
-#include "rviz_visual_testing_framework/visual_test_publisher.hpp"
+#include <opencv2/opencv.hpp>
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/clock.hpp"
+#include "sensor_msgs/msg/compressed_image.hpp"
+#include "std_msgs/msg/header.hpp"
 
-#include "../../page_objects/image_display_page_object.hpp"
-#include "../../publishers/image_publisher.hpp"
-#include "../../publishers/compressed_image_publisher.hpp"
+using namespace std::chrono_literals;  // NOLINT
 
+namespace nodes
+{
 
-TEST_F(VisualTestFixture, test_image_display_with_published_image) {
-  auto image_publisher = std::make_unique<VisualTestPublisher>(
-    std::make_shared<nodes::ImagePublisher>(), "image_frame");
+class CompressedImagePublisher : public rclcpp::Node
+{
+public:
+  explicit CompressedImagePublisher(const std::string & topic_name = "image")
+  : Node("compressed_image_publisher")
+  {
+    publisher = this->create_publisher<sensor_msgs::msg::CompressedImage>(topic_name, 10);
+    timer = this->create_wall_timer(100ms,
+        std::bind(&CompressedImagePublisher::timer_callback, this));
+  }
 
-  setCamPose(Ogre::Vector3(0, 0, 16));
-  setCamLookAt(Ogre::Vector3(0, 0, 0));
+private:
+  void timer_callback()
+  {
+    auto message = sensor_msgs::msg::CompressedImage();
+    message.header = std_msgs::msg::Header();
+    message.header.frame_id = "image_frame";
+    message.header.stamp = rclcpp::Clock().now();
 
-  auto image_display = addDisplay<ImageDisplayPageObject>();
-  image_display->setTopic("/image");
+    cv::Mat image(200, 300, CV_8UC3, cv::Scalar(0, 255, 0));
+    std::vector<uchar> compressed_image;
+    cv::imencode(".jpg", image, compressed_image);
 
-  captureRenderWindow(image_display);
+    message.data.assign(compressed_image.begin(), compressed_image.end());
+    message.format = "jpeg";
+    publisher->publish(message);
+  }
 
-  assertScreenShotsIdentity();
-}
+  rclcpp::TimerBase::SharedPtr timer;
+  rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisher;
+};
 
-TEST_F(VisualTestFixture, test_compressed_image_display_with_published_image) {
-  auto compressed_image_publisher = std::make_unique<VisualTestPublisher>(
-    std::make_shared<nodes::CompressedImagePublisher>(), "image_frame");
+}  // namespace nodes
 
-  setCamPose(Ogre::Vector3(0, 0, 16));
-  setCamLookAt(Ogre::Vector3(0, 0, 0));
-
-  auto image_display = addDisplay<ImageDisplayPageObject>();
-  image_display->setTopic("/image");
-
-  captureRenderWindow(image_display);
-
-  assertScreenShotsIdentity();
-}
+#endif  // RVIZ_DEFAULT_PLUGINS__PUBLISHERS__COMPRESSED_IMAGE_PUBLISHER_HPP_
