@@ -120,6 +120,8 @@ protected:
     {"zstd",            "sensor_msgs/msg/CompressedImage"},
     /* *INDENT-ON* */
   };
+  std::unique_ptr<ROSImageTextureIface> texture_;
+  std::unique_ptr<rviz_common::RenderPanel> render_panel_;
 
 private:
   void setupScreenRectangle();
@@ -129,10 +131,6 @@ private:
 
   std::unique_ptr<Ogre::Rectangle2D> screen_rect_;
   Ogre::MaterialPtr material_;
-
-  std::unique_ptr<ROSImageTextureIface> texture_;
-
-  std::unique_ptr<rviz_common::RenderPanel> render_panel_;
 
   rviz_common::properties::EnumProperty * transport_override_property_;
   rviz_common::properties::BoolProperty * normalize_property_;

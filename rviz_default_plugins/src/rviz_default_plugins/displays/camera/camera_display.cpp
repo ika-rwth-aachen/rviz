@@ -121,7 +121,6 @@ static Ogre::Vector4 calculateScreenCorners(
 
 CameraDisplay::CameraDisplay()
 : tf_filter_(nullptr),
-  texture_(std::make_unique<ROSImageTexture>()),
   new_caminfo_(false),
   caminfo_ok_(false),
   force_render_(false)

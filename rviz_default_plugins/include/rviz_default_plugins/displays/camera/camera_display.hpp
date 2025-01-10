@@ -192,9 +192,6 @@ private:
   std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::Image,
     rviz_common::transformation::FrameTransformer>> tf_filter_;
 
-  std::unique_ptr<ROSImageTextureIface> texture_;
-  std::unique_ptr<rviz_common::RenderPanel> render_panel_;
-
   std::shared_ptr<message_filters::Cache<sensor_msgs::msg::Image>> cache_images_;
 
   rviz_common::properties::FloatProperty * alpha_property_;
