@@ -40,6 +40,7 @@
 #include <QObject>  // NOLINT cpplint cannot handle include order here
 #include <QString>  // NOLINT cpplint cannot handle include order here
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>

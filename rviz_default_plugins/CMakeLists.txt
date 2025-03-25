@@ -884,7 +884,6 @@ if(BUILD_TESTING)
     TIMEOUT 180)
   if(TARGET image_display_visual_test)
     find_package(OpenCV REQUIRED)
-    find_package(image_transport_plugins REQUIRED)
     include_directories(${OpenCV_INCLUDE_DIRS})
     target_include_directories(image_display_visual_test PRIVATE test)
     target_link_libraries(image_display_visual_test

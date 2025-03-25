@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 
