@@ -31,7 +31,6 @@
 #ifndef RVIZ_DEFAULT_PLUGINS__PUBLISHERS__IMAGE_PUBLISHER_HPP_
 #define RVIZ_DEFAULT_PLUGINS__PUBLISHERS__IMAGE_PUBLISHER_HPP_
 
-#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <string>
