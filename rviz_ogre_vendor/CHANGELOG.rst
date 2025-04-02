@@ -2,6 +2,13 @@
 Changelog for package rviz_ogre_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing glew dependency for ogre vendor package. (`#1350 <https://github.com/ros2/rviz/issues/1350>`_) (`#1351 <https://github.com/ros2/rviz/issues/1351>`_)
+  (cherry picked from commit 84c82b1bdf3669fdd37f95fbf2691f9e8443b48b)
+  Co-authored-by: Stefan Fabian <github@stefanfabian.me>
+* Contributors: mergify[bot]
+
 14.1.7 (2025-01-14)
 -------------------
 
