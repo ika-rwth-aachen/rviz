@@ -114,3 +114,10 @@ TEST_F(WrenchVisualTestFixture, setWrench_hides_force_arrow_for_larger_width_tha
     EXPECT_THAT(object->isVisible(), IsFalse());
   }
 }
+
+TEST_F(WrenchVisualTestFixture, constructor_handles_null_scene_manager) {
+  auto root_node = Ogre::Root::getSingletonPtr()->createSceneManager()->getRootSceneNode();
+  ASSERT_NE(root_node, nullptr);
+  ASSERT_THROW(std::make_shared<rviz_rendering::WrenchVisual>(nullptr, root_node),
+    std::invalid_argument);
+}
