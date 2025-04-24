@@ -2,8 +2,8 @@
 Changelog for package rviz_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+14.1.9 (2025-04-24)
+-------------------
 * addTrackedObject Function Fails to Handle Null Pointer, Causing Crash When nullptr is Passed (`#1375 <https://github.com/ros2/rviz/issues/1375>`_) (`#1378 <https://github.com/ros2/rviz/issues/1378>`_)
   (cherry picked from commit a657981d9fc816900688663bfcb6e7f3c50a0acc)
   Co-authored-by: Alejandro Hernández Cordero <alejandro@openrobotics.org>

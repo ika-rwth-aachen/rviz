@@ -2,8 +2,8 @@
 Changelog for package rviz_rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+14.1.9 (2025-04-24)
+-------------------
 * Removed Windows warnings (`#1413 <https://github.com/ros2/rviz/issues/1413>`_) (`#1414 <https://github.com/ros2/rviz/issues/1414>`_)
   Co-authored-by: Alejandro Hernández Cordero <alejandro@openrobotics.org>
 * MovableText constructor does not validate invalid character height, default fallback missing (`#1398 <https://github.com/ros2/rviz/issues/1398>`_) (`#1424 <https://github.com/ros2/rviz/issues/1424>`_)
