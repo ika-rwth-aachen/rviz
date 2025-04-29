@@ -2,8 +2,8 @@
 Changelog for package rviz_assimp_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+14.1.10 (2025-04-29)
+--------------------
 * Clean ogre CMakeLists.txt (`#1251 <https://github.com/ros2/rviz/issues/1251>`_) (`#1446 <https://github.com/ros2/rviz/issues/1446>`_)
   Assimp version always greater than 5.0.1.
   # https://github.com/ros2/rviz/issues/524

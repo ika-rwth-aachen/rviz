@@ -2,8 +2,8 @@
 Changelog for package rviz_rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+14.1.10 (2025-04-29)
+--------------------
 * Missing Null Pointer Check in TrianglePolygon Constructor Leads to Crash (`#1434 <https://github.com/ros2/rviz/issues/1434>`_) (`#1442 <https://github.com/ros2/rviz/issues/1442>`_)
   (cherry picked from commit 473e0cede8de962d317bf0f47dcc28191589d4a2)
   Co-authored-by: Alejandro Hernández Cordero <alejandro@openrobotics.org>
