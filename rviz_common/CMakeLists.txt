@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(rviz_common)
 
@@ -31,7 +31,14 @@ find_package(ament_cmake REQUIRED)
 # do find_package(rviz_ogre_vendor) first to make sure the custom OGRE is found
 find_package(rviz_ogre_vendor REQUIRED)
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+if(${QT_VERSION} VERSION_LESS 5.15.0)
+  function(qt_wrap_cpp out)
+    qt5_wrap_cpp(_sources ${ARGN})
+    set("${out}" ${_sources} PARENT_SCOPE)
+  endfunction()
+endif()
 
 find_package(geometry_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -129,10 +136,11 @@ set(rviz_common_headers_to_moc
   include/rviz_common/visualization_frame.hpp
   src/rviz_common/widget_geometry_change_detector.hpp
   include/rviz_common/ros_topic_display.hpp
+  include/rviz_common/ros_adapter_display.hpp
 )
 
 foreach(header "${rviz_common_headers_to_moc}")
-  qt5_wrap_cpp(rviz_common_moc_files "${header}")
+  qt_wrap_cpp(rviz_common_moc_files "${header}")
 endforeach()
 
 set(rviz_common_source_files
@@ -241,7 +249,7 @@ target_link_libraries(rviz_common PUBLIC
   ${geometry_msgs_TARGETS}
   message_filters::message_filters
   pluginlib::pluginlib
-  Qt5::Widgets
+  Qt${QT_VERSION_MAJOR}::Widgets
   rclcpp::rclcpp
   rviz_ogre_vendor::OgreMain
   rviz_ogre_vendor::OgreOverlay
@@ -267,7 +275,7 @@ ament_export_dependencies(
   geometry_msgs
   message_filters
   pluginlib
-  Qt5
+  Qt${QT_VERSION_MAJOR}
   rclcpp
   rviz_ogre_vendor
   rviz_rendering
@@ -326,10 +334,10 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
 
-  qt5_wrap_cpp(rviz_common_test_moc_files test/mock_display.hpp)
-  qt5_wrap_cpp(rviz_common_test_moc_files test/mock_property_change_receiver.hpp)
+  qt_wrap_cpp(rviz_common_test_moc_files test/mock_display.hpp)
+  qt_wrap_cpp(rviz_common_test_moc_files test/mock_property_change_receiver.hpp)
 
-  qt5_wrap_cpp(rviz_common_test_frame_manager_moc src/rviz_common/frame_manager.hpp)
+  qt_wrap_cpp(rviz_common_test_frame_manager_moc src/rviz_common/frame_manager.hpp)
 
   ament_add_gmock(display_factory_test
     test/display_factory_test.cpp
@@ -338,7 +346,7 @@ if(BUILD_TESTING)
   if(TARGET display_factory_test)
     target_compile_definitions(display_factory_test PUBLIC
       -D_TEST_PLUGIN_DESCRIPTIONS="${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(display_factory_test rviz_common Qt5::Widgets)
+    target_link_libraries(display_factory_test rviz_common Qt${QT_VERSION_MAJOR}::Widgets)
   endif()
 
   ament_add_gmock(frame_manager_test
@@ -447,7 +455,7 @@ if(BUILD_TESTING)
     test/mock_property_change_receiver.cpp
     ${SKIP_DISPLAY_TESTS})
   if(TARGET rviz_common_display_test)
-    target_link_libraries(rviz_common_display_test rviz_common Qt5::Widgets yaml-cpp::yaml-cpp)
+    target_link_libraries(rviz_common_display_test rviz_common Qt${QT_VERSION_MAJOR}::Widgets yaml-cpp::yaml-cpp)
   endif()
 endif()
 
