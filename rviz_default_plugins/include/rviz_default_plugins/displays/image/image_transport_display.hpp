@@ -160,30 +160,27 @@ public:
     topic_property_->setString(topic);
   }
 
-  std::vector<std::string> split(const std::string& target, char c)
+  std::vector<std::string> split(const std::string & target, char c)
   {
-  	std::string temp;
-  	std::stringstream stringstream { target };
-  	std::vector<std::string> result;
+    std::string temp;
+    std::stringstream stringstream {target};
+    std::vector<std::string> result;
 
-  	while (std::getline(stringstream, temp, c)) {
-  		result.push_back(temp);
-  	}
+    while (std::getline(stringstream, temp, c)) {
+      result.push_back(temp);
+    }
 
-  	return result;
+    return result;
   }
-
 
 protected:
   void updateTopic() override
   {
-    if (image_transport_type_property_->getStdString() == "raw")
-    {
+    if (image_transport_type_property_->getStdString() == "raw") {
       QString message_type =
         QString::fromStdString(rosidl_generator_traits::name<sensor_msgs::msg::Image>());
       topic_property_->setMessageType(message_type);
-    } else if (image_transport_type_property_->getStdString() == "compressed")
-    {
+    } else if (image_transport_type_property_->getStdString() == "compressed") {
       QString message_type =
         QString::fromStdString(rosidl_generator_traits::name<sensor_msgs::msg::CompressedImage>());
       topic_property_->setMessageType(message_type);
