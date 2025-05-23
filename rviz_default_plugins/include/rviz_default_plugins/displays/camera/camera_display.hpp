@@ -110,6 +110,8 @@ public:
 
   ~CameraDisplay() override;
 
+  static std::string getZedCameraInfoTopic(const std::string & base_topic);
+
   // Overrides from Display
   void onInitialize() override;
 

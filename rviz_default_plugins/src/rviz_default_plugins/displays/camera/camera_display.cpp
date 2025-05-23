@@ -185,6 +185,28 @@ void CameraDisplay::onInitialize()
   this->addChild(visibility_property_, 0);
 }
 
+std::string CameraDisplay::getZedCameraInfoTopic(const std::string & base_topic)
+{
+  // special case for confidence topic
+  if (base_topic.find("zed/zed_node/confidence/") != std::string::npos) {
+    return "zed/zed_node/rgb/camera_info";
+  }
+  
+  // all other camera topics 
+  size_t zed_pos = base_topic.find("/zed/zed_node/");
+  if (zed_pos != std::string::npos) {
+    size_t pos = zed_pos + 14; // position after "/zed/zed_node/" (14)
+    size_t next_slash = base_topic.find("/", pos);
+    
+    if (next_slash != std::string::npos) {
+      // extract base topic with camera type e.g. "/zed/zed_node/left
+      std::string camera_base = base_topic.substr(0, next_slash);
+      return camera_base + "/camera_info";
+    }
+  }
+
+  return image_transport::getCameraInfoTopic(base_topic);
+}
 
 void CameraDisplay::setupSceneNodes()
 {
@@ -345,8 +367,7 @@ void CameraDisplay::createCameraInfoSubscription()
     // The camera_info topic should be at the same level as the image topic
     // TODO(anyone) Store this in a member variable
 
-    std::string camera_info_topic = image_transport::getCameraInfoTopic(
-      topic_property_->getTopicStd());
+    std::string camera_info_topic = getZedCameraInfoTopic(topic_property_->getTopicStd());
 
     rclcpp::SubscriptionOptions sub_opts;
     sub_opts.event_callbacks.message_lost_callback =
@@ -408,8 +429,7 @@ void CameraDisplay::clear()
   new_caminfo_ = false;
   current_caminfo_.reset();
 
-  std::string camera_info_topic =
-    image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
+  std::string camera_info_topic = getZedCameraInfoTopic(topic_property_->getTopicStd());
 
   setStatus(
     StatusLevel::Warn, CAM_INFO_STATUS,
@@ -455,8 +475,7 @@ bool CameraDisplay::updateCamera()
   }
 
   if (!info) {
-    std::string camera_info_topic = image_transport::getCameraInfoTopic(
-      topic_property_->getTopicStd());
+    std::string camera_info_topic = getZedCameraInfoTopic(topic_property_->getTopicStd());
 
     setStatus(
       StatusLevel::Warn, CAM_INFO_STATUS,
