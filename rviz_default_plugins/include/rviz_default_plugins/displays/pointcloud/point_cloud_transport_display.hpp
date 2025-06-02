@@ -111,10 +111,10 @@ protected:
 
     try {
       auto required_interfaces = std::make_shared<rclcpp::node_interfaces::NodeInterfaces<
-        rclcpp::node_interfaces::NodeBaseInterface,
-        rclcpp::node_interfaces::NodeParametersInterface,
-        rclcpp::node_interfaces::NodeTopicsInterface,
-        rclcpp::node_interfaces::NodeLoggingInterface>>(*rviz_ros_node_.lock()->get_raw_node());
+            rclcpp::node_interfaces::NodeBaseInterface,
+            rclcpp::node_interfaces::NodeParametersInterface,
+            rclcpp::node_interfaces::NodeTopicsInterface,
+            rclcpp::node_interfaces::NodeLoggingInterface>>(*rviz_ros_node_.lock()->get_raw_node());
 
       subscription_ = std::make_shared<point_cloud_transport::SubscriberFilter>();
       subscription_->subscribe(
