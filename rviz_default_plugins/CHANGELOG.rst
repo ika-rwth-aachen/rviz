@@ -2,8 +2,8 @@
 Changelog for package rviz_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+15.1.6 (2025-07-01)
+-------------------
 * Better handling of missing transport plugins (`#1488 <https://github.com/ros2/rviz/issues/1488>`_)
 * Contributors: Alejandro Hernández Cordero
 
