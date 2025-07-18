@@ -192,6 +192,12 @@ void ViewController::activate()
   onActivate();
 }
 
+void ViewController::update(std::chrono::duration dt, std::chrono::duration ros_dt)
+{
+  update(std::chrono::duration_cast<std::chrono::nanoseconds>(dt).count(),
+         std::chrono::duration_cast<std::chrono::nanoseconds>(ros_dt).count());
+}
+
 void ViewController::update(float dt, float ros_dt)
 {
   (void) dt;

@@ -87,10 +87,17 @@ void ViewManager::initialize()
   setCurrent(create("rviz_default_plugins/Orbit"), false);
 }
 
-void ViewManager::update(float wall_dt, float ros_dt)
+void ViewManager::update(std::chrono::duration wall_dt, std::chrono::duration ros_dt)
 {
   if (getCurrent()) {
     getCurrent()->update(wall_dt, ros_dt);
+  }
+}
+
+void ViewManager::update(float wall_dt, float ros_dt)
+{
+  if (getCurrent()) {
+    getCurrent()->update(std::chrono::nanoseconds(wall_dt), std::chrono::nanoseconds(ros_dt));
   }
 }
 

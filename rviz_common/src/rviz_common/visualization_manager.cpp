@@ -338,13 +338,13 @@ void VisualizationManager::onUpdate()
 {
   const auto wall_now = std::chrono::system_clock::now();
   const auto wall_diff = wall_now - last_update_wall_time_;
-  const uint64_t wall_dt = std::chrono::duration_cast<std::chrono::nanoseconds>(wall_diff).count();
+  const auto wall_dt = std::chrono::duration_cast<std::chrono::nanoseconds>(wall_diff);
   const auto ros_now = clock_->now();
-  const uint64_t ros_dt = ros_now.nanoseconds() - last_update_ros_time_.nanoseconds();
+  const auto ros_dt = std::chrono::nanoseconds(ros_now.nanoseconds() - last_update_ros_time_.nanoseconds());
   last_update_ros_time_ = ros_now;
   last_update_wall_time_ = wall_now;
 
-  if (ros_dt < 0.0) {
+  if (ros_dt < std::chrono::nanoseconds(0.0)) {
     resetTime();
   }
 
@@ -362,15 +362,15 @@ void VisualizationManager::onUpdate()
 
   time_update_timer_ += wall_dt;
 
-  if (time_update_timer_ > 0.1f) {
-    time_update_timer_ = 0.0f;
+  if (time_update_timer_ > std::chrono::nanoseconds(0.1f)) {
+    time_update_timer_ = std::chrono::nanoseconds(0.0f);
     updateTime();
   }
 
   frame_update_timer_ += wall_dt;
 
-  if (frame_update_timer_ > 1.0f) {
-    frame_update_timer_ = 0.0f;
+  if (frame_update_timer_ > std::chrono::nanoseconds(1.0f)) {
+    frame_update_timer_ = std::chrono::nanoseconds(0.0f);
     updateFrames();
   }
 

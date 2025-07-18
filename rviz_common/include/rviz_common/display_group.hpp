@@ -146,6 +146,10 @@ public:
   virtual DisplayGroup * getGroupAt(int index) const;
 
   /// Call update() on all child Displays.
+  void update(std::chrono::duration wall_dt, std::chrono::duration ros_dt) override;
+
+  /// Call update() on all child Displays.
+  [[deprecated("Use update(std::chrono::duration, std::chrono::duration)")]]
   void update(float wall_dt, float ros_dt) override;
 
   /// Reset this and all child Displays.
