@@ -71,8 +71,8 @@ public:
 
   void initialize();
 
-  void update(std::chrono::duration wall_dt, std::chrono::duration ros_dt);
-  [[deprecated("Use update(std::chrono::duration, std::chrono::duration)")]]
+  void update(std::chrono::nanoseconds wall_dt, std::chrono::nanoseconds ros_dt);
+  [[deprecated("Use update(std::chrono::nanoseconds, std::chrono::nanoseconds)")]]
   void update(float wall_dt, float ros_dt);
 
   /// Return the current ViewController in use for the main RenderWindow.
