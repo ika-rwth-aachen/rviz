@@ -237,13 +237,7 @@ void DisplayGroup::update(std::chrono::nanoseconds wall_dt, std::chrono::nanosec
 
 void DisplayGroup::update(float wall_dt, float ros_dt)
 {
-  int num_children = displays_.size();
-  for (int i = 0; i < num_children; i++) {
-    Display * display = displays_.at(i);
-    if (display->isEnabled() ) {
-      display->update(std::chrono::nanoseconds(wall_dt), std::chrono::nanoseconds(ros_dt));
-    }
-  }
+  this->update(std::chrono::nanoseconds(wall_dt), std::chrono::nanoseconds(ros_dt));
 }
 
 void DisplayGroup::reset()
