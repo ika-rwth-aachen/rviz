@@ -32,6 +32,8 @@
 #ifndef RVIZ_COMMON__TOOL_HPP_
 #define RVIZ_COMMON__TOOL_HPP_
 
+#include <chrono>
+
 #include <QCursor>
 #include <QIcon>
 #include <QObject>

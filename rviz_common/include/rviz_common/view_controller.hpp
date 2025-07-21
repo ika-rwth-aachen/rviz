@@ -32,6 +32,7 @@
 #ifndef RVIZ_COMMON__VIEW_CONTROLLER_HPP_
 #define RVIZ_COMMON__VIEW_CONTROLLER_HPP_
 
+#include <chrono>
 #include <string>
 #include <memory>
 
