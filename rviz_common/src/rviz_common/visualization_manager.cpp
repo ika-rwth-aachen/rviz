@@ -140,8 +140,8 @@ VisualizationManager::VisualizationManager(
   render_panel_(render_panel),
   wall_clock_elapsed_(0),
   ros_time_elapsed_(0),
-  time_update_timer_(0.0f),
-  frame_update_timer_(0.0f),
+  time_update_timer_(0),
+  frame_update_timer_(0),
   render_requested_(1),
   frame_count_(0),
   window_manager_(wm),
@@ -336,11 +336,13 @@ BitAllocator * VisualizationManager::visibilityBits()
 
 void VisualizationManager::onUpdate()
 {
-  const auto wall_now = std::chrono::system_clock::now();
-  const auto wall_diff = wall_now - last_update_wall_time_;
-  const auto wall_dt = std::chrono::duration_cast<std::chrono::nanoseconds>(wall_diff);
+  const std::chrono::time_point<std::chrono::system_clock> wall_now = 
+    std::chrono::system_clock::now();
+  const std::chrono::nanoseconds wall_dt = 
+    std::chrono::duration_cast<std::chrono::nanoseconds> (wall_now - last_update_wall_time_);
   const auto ros_now = clock_->now();
-  const auto ros_dt = std::chrono::nanoseconds(std::round(ros_now.nanoseconds() - last_update_ros_time_.nanoseconds()));
+  const auto ros_dt = std::chrono::nanoseconds(
+      static_cast<int>(std::round(ros_now.nanoseconds() - last_update_ros_time_.nanoseconds())));
   last_update_ros_time_ = ros_now;
   last_update_wall_time_ = wall_now;
 
@@ -390,7 +392,7 @@ void VisualizationManager::onUpdate()
   }
 
   frame_count_++;
-  if (render_requested_ || wall_diff > std::chrono::milliseconds(10)) {
+  if (render_requested_ || wall_dt > std::chrono::milliseconds(10)) {
     render_requested_ = 0;
     std::lock_guard<std::mutex> lock(private_->render_mutex_);
     ogre_root_->renderOneFrame();
