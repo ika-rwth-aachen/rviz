@@ -2,7 +2,8 @@ include:
   - remote: 'https://raw.githubusercontent.com/ika-rwth-aachen/docker-ros/main/.gitlab-ci/docker-ros.yml'
 
 variables:
-  BASE_IMAGE: rwthika/ros2:jazzy
+  BASE_IMAGE: rwthika/ros2-cuda:jazzy
   COMMAND: rviz2
   TARGET: dev,run
   PLATFORM: amd64
+  RMW_IMPLEMENTATION: rmw_zenoh_cpp
