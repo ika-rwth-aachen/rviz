@@ -194,7 +194,8 @@ void ViewController::activate()
 
 void ViewController::update(std::chrono::nanoseconds dt, std::chrono::nanoseconds ros_dt)
 {
-  update(dt, ros_dt);
+  (void) dt;
+  (void) ros_dt;
 }
 
 void ViewController::update(float dt, float ros_dt)
