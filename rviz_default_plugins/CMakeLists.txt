@@ -109,6 +109,7 @@ set(rviz_default_plugins_headers_to_moc
   include/rviz_default_plugins/displays/pointcloud/transformers/flat_color_pc_transformer.hpp
   include/rviz_default_plugins/displays/pointcloud/transformers/intensity_pc_transformer.hpp
   include/rviz_default_plugins/displays/polygon/polygon_display.hpp
+  include/rviz_default_plugins/displays/geofence/geofence_display.hpp
   include/rviz_default_plugins/displays/pose/pose_display.hpp
   include/rviz_default_plugins/displays/pose_array/pose_array_display.hpp
   include/rviz_default_plugins/displays/pose_covariance/pose_with_covariance_display.hpp
@@ -194,6 +195,7 @@ set(rviz_default_plugins_source_files
   src/rviz_default_plugins/displays/pointcloud/point_cloud_display.cpp
   src/rviz_default_plugins/displays/pointcloud/point_cloud2_display.cpp
   src/rviz_default_plugins/displays/polygon/polygon_display.cpp
+  src/rviz_default_plugins/displays/geofence/geofence_display.cpp
   src/rviz_default_plugins/displays/pose/pose_display.cpp
   src/rviz_default_plugins/displays/pose/pose_display_selection_handler.cpp
   src/rviz_default_plugins/displays/pose_array/pose_array_display.cpp
