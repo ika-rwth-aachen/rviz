@@ -80,7 +80,7 @@ void RosTopicProperty::fillTopicList()
   for (const auto & topic : published_topics) {
     // Only add topics whose type matches.
     for (const auto & type : topic.second) {
-      if (type == std_message_type) {
+      if (type == std_message_type || (type == "sensor_msgs/msg/CompressedImage" && std_message_type == "sensor_msgs/msg/Image")) {
         addOptionStd(topic.first);
       }
     }
