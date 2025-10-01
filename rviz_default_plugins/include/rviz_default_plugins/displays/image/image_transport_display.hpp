@@ -60,7 +60,14 @@ public:
   : messages_received_(0)
   {
     QString message_type = QString::fromStdString(rosidl_generator_traits::name<MessageType>());
-    topic_property_->setMessageType(message_type);
+    std::vector<QString> supported_types = {
+      "sensor_msgs/msg/Image",
+      "sensor_msgs/msg/CompressedImage",
+      "ffmpeg_image_transport/msg/FFMPEGPacket",
+      "theora_image_transport/msg/Packet"
+    };
+
+    topic_property_->setMessageTypes(supported_types);
     topic_property_->setDescription(message_type + " topic to subscribe to.");
   }
 
