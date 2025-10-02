@@ -62,7 +62,7 @@ public:
   void setMessageTypes(const std::vector<QString> & message_types);
   
   QString getMessageType() const
-  {return message_types_.front();}
+  {return message_types_.empty() ? QString() : message_types_.front();}
 
   std::vector<QString> getMessageTypes() const
   {return message_types_;}
