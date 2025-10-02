@@ -61,7 +61,7 @@ public:
   {
     QString message_type = QString::fromStdString(rosidl_generator_traits::name<MessageType>());
     std::vector<QString> supported_types = {
-      "sensor_msgs/msg/Image",
+      message_type,
       "sensor_msgs/msg/CompressedImage",
       "ffmpeg_image_transport/msg/FFMPEGPacket",
       "theora_image_transport/msg/Packet"
