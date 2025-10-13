@@ -61,14 +61,10 @@ public:
   void setMessageTypes(const QStringList & message_types);
   
   QString getMessageType() const
-  {
-    return message_types_.isEmpty() ? QString() : message_types_.first();
-  }
+  {return message_types_.isEmpty() ? QString() : message_types_.first();}
 
   QStringList getMessageTypes() const
-  {
-    return message_types_;
-  }
+  {return message_types_;}
 
   QString getTopic() const
   {return getValue().toString();}
