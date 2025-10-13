@@ -30,7 +30,6 @@
 #define RVIZ_COMMON__PROPERTIES__ROS_TOPIC_PROPERTY_HPP_
 
 #include <string>
-#include <vector>
 
 #include "rviz_common/properties/editable_enum_property.hpp"
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
@@ -59,13 +58,17 @@ public:
 
   void setMessageType(const QString & message_type);
 
-  void setMessageTypes(const std::vector<QString> & message_types);
+  void setMessageTypes(const QStringList & message_types);
   
   QString getMessageType() const
-  {return message_types_.empty() ? QString() : message_types_.front();}
+  {
+    return message_types_.isEmpty() ? QString() : message_types_.first();
+  }
 
-  std::vector<QString> getMessageTypes() const
-  {return message_types_;}
+  QStringList getMessageTypes() const
+  {
+    return message_types_;
+  }
 
   QString getTopic() const
   {return getValue().toString();}
@@ -81,7 +84,7 @@ protected Q_SLOTS:
 
 private:
   ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
-  std::vector<QString> message_types_;
+  QStringList message_types_;
 };
 
 class RVIZ_COMMON_PUBLIC RosFilteredTopicProperty

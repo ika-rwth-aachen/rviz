@@ -66,10 +66,10 @@ void RosTopicProperty::initialize(ros_integration::RosNodeAbstractionIface::Weak
 void RosTopicProperty::setMessageType(const QString & message_type)
 {
   message_types_.clear();
-  message_types_.push_back(message_type);
+  message_types_.append(message_type);
 }
 
-void RosTopicProperty::setMessageTypes(const std::vector<QString> & message_types)
+void RosTopicProperty::setMessageTypes(const QStringList & message_types)
 {
   message_types_ = message_types;
 }

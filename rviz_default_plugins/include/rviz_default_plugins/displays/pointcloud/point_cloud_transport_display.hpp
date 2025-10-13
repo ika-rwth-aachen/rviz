@@ -58,7 +58,7 @@ public:
   : messages_received_(0)
   {
     QString message_type = QString::fromStdString(rosidl_generator_traits::name<MessageType>());
-    std::vector<QString> supported_types = {
+    QStringList supported_types = {
       message_type,
       "point_cloud_interfaces/msg/CompressedPointCloud2"
     };
