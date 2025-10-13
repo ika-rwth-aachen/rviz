@@ -58,8 +58,13 @@ public:
 
   void setMessageType(const QString & message_type);
 
+  void setMessageTypes(const QStringList & message_types);
+  
   QString getMessageType() const
-  {return message_type_;}
+  {return message_types_.isEmpty() ? QString() : message_types_.first();}
+
+  QStringList getMessageTypes() const
+  {return message_types_;}
 
   QString getTopic() const
   {return getValue().toString();}
@@ -75,7 +80,7 @@ protected Q_SLOTS:
 
 private:
   ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
-  QString message_type_;
+  QStringList message_types_;
 };
 
 class RVIZ_COMMON_PUBLIC RosFilteredTopicProperty

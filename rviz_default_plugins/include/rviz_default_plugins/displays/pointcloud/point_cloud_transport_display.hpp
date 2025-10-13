@@ -58,7 +58,12 @@ public:
   : messages_received_(0)
   {
     QString message_type = QString::fromStdString(rosidl_generator_traits::name<MessageType>());
-    topic_property_->setMessageType(message_type);
+    QStringList supported_types = {
+      message_type,
+      "point_cloud_interfaces/msg/CompressedPointCloud2"
+    };
+      
+    topic_property_->setMessageTypes(supported_types);
     topic_property_->setDescription(message_type + " topic to subscribe to.");
   }
 

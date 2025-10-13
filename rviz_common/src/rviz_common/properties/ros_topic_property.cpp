@@ -51,7 +51,7 @@ RosTopicProperty::RosTopicProperty(
   QObject * receiver)
 : EditableEnumProperty(name, default_value, description, parent, changed_slot, receiver),
   rviz_ros_node_(),
-  message_type_(message_type)
+  message_types_({message_type})
 {
   connect(
     this, SIGNAL(requestOptions(EditableEnumProperty*)),
@@ -65,7 +65,13 @@ void RosTopicProperty::initialize(ros_integration::RosNodeAbstractionIface::Weak
 
 void RosTopicProperty::setMessageType(const QString & message_type)
 {
-  message_type_ = message_type;
+  message_types_.clear();
+  message_types_.append(message_type);
+}
+
+void RosTopicProperty::setMessageTypes(const QStringList & message_types)
+{
+  message_types_ = message_types;
 }
 
 void RosTopicProperty::fillTopicList()
@@ -73,15 +79,17 @@ void RosTopicProperty::fillTopicList()
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   clearOptions();
 
-  std::string std_message_type = message_type_.toStdString();
   std::map<std::string, std::vector<std::string>> published_topics =
     rviz_ros_node_.lock()->get_topic_names_and_types();
 
   for (const auto & topic : published_topics) {
-    // Only add topics whose type matches.
     for (const auto & type : topic.second) {
-      if (type == std_message_type) {
-        addOptionStd(topic.first);
+      for (const auto & message_type : message_types_) {
+        std::string std_message_type = message_type.toStdString();
+        if (type == std_message_type) {
+          addOptionStd(topic.first);
+          break;
+        }
       }
     }
   }
