@@ -119,7 +119,10 @@
     <description>
       The Image display creates a new rendering window with an image.
     </description>
+    <message_type>ffmpeg_image_transport_msgs/msg/FFMPEGPacket</message_type>
+    <message_type>sensor_msgs/msg/CompressedImage</message_type>
     <message_type>sensor_msgs/msg/Image</message_type>
+    <message_type>theora_image_transport/msg/Packet</message_type>
   </class>
 
   <class
@@ -174,6 +177,7 @@
       The Point Cloud2 display shows data from a (recommended) sensor_msgs/PointCloud2 message.
     </description>
     <message_type>sensor_msgs/msg/PointCloud2</message_type>
+    <message_type>point_cloud_interfaces/msg/CompressedPointCloud2</message_type>
   </class>
 
   <class
