@@ -43,6 +43,7 @@
 
 #include "display_factory.hpp"
 #include "rviz_common/display.hpp"
+#include "rviz_common/display_group.hpp"
 #include "add_display_dialog.hpp"
 #include "rviz_common/properties/property.hpp"
 #include "rviz_common/properties/property_tree_widget.hpp"
@@ -194,6 +195,11 @@ void DisplaysPanel::onDeleteDisplay()
     // Displays can emit signals from other threads with self pointers.  We're
     // freeing the display now, so ensure no one is listening to those signals.
     displays_to_delete[i]->disconnect();
+    // Clear Camera visibility properties before the display is destroyed.
+    auto * parent_group = qobject_cast<DisplayGroup *>(displays_to_delete[i]->getParent());
+    if (parent_group) {
+      parent_group->takeDisplay(displays_to_delete[i]);
+    }
     // Delete display later in case there are pending signals to it.
     displays_to_delete[i]->deleteLater();
   }
